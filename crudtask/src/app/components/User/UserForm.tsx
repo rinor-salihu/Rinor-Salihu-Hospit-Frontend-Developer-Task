@@ -43,7 +43,7 @@ function UserForm({ userData, onCreateUser, onUpdateUser }: UserFormProps) {
 
   return (
     <FormContainer>
-      <h1 style={ {textAlign:"center"}} >{userId ? 'Edit User' : 'Create User'}</h1>
+      <h1 style={ {textAlign:"center"}} >{userId ? 'Update User' : 'Create User'}</h1>
       <Form onSubmit={handleSubmit}>
         <Input
           type="text"
