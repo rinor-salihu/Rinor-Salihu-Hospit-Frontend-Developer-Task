@@ -1,13 +1,12 @@
 import React from 'react';
-import UserCard from '../app/components/User/UserCard';
-import UserForm from '../app/components/User/UserForm';
 
-const UserPage = () => {
+const HomePage: React.FC = () => {
   return (
     <div>
-      <UserCard />
+      <h1>Welcome to the User Management App</h1>
+      <a href="/users">View Users</a>
     </div>
   );
 };
 
-export default UserPage;
+export default HomePage;

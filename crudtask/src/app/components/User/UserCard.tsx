@@ -1,46 +1,180 @@
 "use client";
-
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { getUsers, deleteUser } from '../../api/userService';
-import { User } from '../../types/user'; // Assuming you have a types file for User interface
+import { User } from '../../types/user'; 
+import toastNotify from '../../helpers/toastNotify';
+import Link from 'next/link';
 
 // Styled Components
-const HeaderContainer = styled.div`
-  display: flex;
-  justify-content: space-between; /* Space between title and button */
-  align-items: center; /* Center items vertically */
-  margin-bottom: 20px; /* Space below the header */
-`;
+function UserCard  ()  {
+
+  const [users, setUsers] = useState<User[]>([]);
+  const [isCardView, setIsCardView] = useState(true); 
+  const [isLoading, setIsLoading] = useState(true); 
+  const userIcon = 'https://alhathal.net/wp-content/uploads/2019/07/516-5167304_transparent-background-white-user-icon-png-png-download.png'; // Replace with your desired image URL
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const fetchedUsers = await getUsers();
+      setUsers(fetchedUsers);
+      setIsLoading(false);
+    };
+    fetchUsers();
+  }, []);
+
+
+
+ 
+
+  const handleDelete = async (id: number) => {
+    await deleteUser(id);
+    setUsers(users.filter(user => user.id !== id));
+    toastNotify('User has been deleted');
+  };
+
+
+  const toggleView = () => {
+    setIsCardView(!isCardView); 
+  };
+
+  return (
+    <Container>
+      <HeaderContainer>
+        <Title>User List</Title>
+        <Link href="/users/new" passHref>
+        <CreateUserButtonContainer>
+          <Link href="/users/new" passHref>
+            <CreateUserButton>Create New User</CreateUserButton>
+          </Link>
+        </CreateUserButtonContainer>        </Link>
+        <ToggleButton onClick={toggleView}>
+          {isCardView ? 'List' : 'Card'}
+        </ToggleButton>
+      </HeaderContainer>
+
+      {isLoading ? (
+        <p>Loading users...</p> 
+      ) : isCardView ? (
+        <CardGrid>
+          {users.map(user => (
+            <Card key={user.id}>
+              <UserInfo>
+                <UserImage src={userIcon} alt="User Icon" />
+                <UserName>{user.name}</UserName>
+              </UserInfo>
+              <UserDetailsContainer>
+                <UserDetail><strong>Username:</strong> {user.username}</UserDetail>
+                <UserDetail><strong>Email:</strong> {user.email}</UserDetail>
+                <UserDetail><strong>Phone:</strong> {user.phone}</UserDetail>
+                <UserDetail><strong>Website:</strong> {user.website}</UserDetail>
+              </UserDetailsContainer>
+              <ActionButtonContainer>
+                <Link href={`/users/${user.id}`} passHref>
+                <UpdateButton>Update</UpdateButton>
+                </Link>
+                <DeleteButton onClick={() => handleDelete(user.id)}>Delete</DeleteButton>
+              </ActionButtonContainer>
+            </Card>
+          ))}
+        </CardGrid>
+      ) : (
+        <TableContainer>
+          <Table>
+            <thead>
+              <tr>
+                <TableHeader>Name</TableHeader>
+                <TableHeader>Username</TableHeader>
+                <TableHeader>Email</TableHeader>
+                <TableHeader>Phone</TableHeader>
+                <TableHeader>Website</TableHeader>
+                <TableHeader>Actions</TableHeader>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map(user => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.name}</TableCell>
+                  <TableCell>{user.username}</TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.phone}</TableCell>
+                  <TableCell>{user.website}</TableCell>
+                  <TableCell>
+                  <ActionButtonContainer>
+                      <Link href={`/users/${user.id}`} passHref>
+                      <UpdateButton>Update</UpdateButton>
+                      </Link>
+                      <DeleteButton onClick={() => handleDelete(user.id)}>Delete</DeleteButton>
+                    </ActionButtonContainer>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </tbody>
+          </Table>
+        </TableContainer>
+      )}
+      
+    </Container>
+  );
+};
+
+export default UserCard;
 
 const Container = styled.div`
   padding: 20px;
-  background-color: #eef2f6; /* Lighter background for contrast */
-  min-height: 100vh; /* Ensure full height */
+  background-color: #eef2f6; 
+  min-height: 100vh; 
 `;
 
+const HeaderContainer = styled.div`
+  display: flex;
+  justify-content: space-between; 
+  align-items: center; 
+`;
+
+const CreateUserButtonContainer = styled.div`
+  flex: 1; // Allow this container to grow and fill the space
+  display: flex;
+  justify-content: center; // Center the button horizontally
+`;
+const CreateUserButton = styled.button`
+  background-color: #002147; // Green color for 'Create New User'
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem; 
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: darkblue; // Darker green on hover
+
+  }
+`;
 const Title = styled.h1`
   text-align: center;
-  font-size: 1.5rem; 
-  color: #34495e; /* Darker color for contrast */
+  font-size: 1.3rem; 
+  color: #002147; 
   margin-bottom: 10px; 
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
 `;
 
-const ButtonContainer = styled.div`
-  display: flex;
-  justify-content: flex-end; /* Align the button to the right */
-  margin-bottom: 20px; /* Space below the button */
-`;
+
 
 const ToggleButton = styled.button`
-  background-color: #0070f3; /* Blue color */
+  background-color: #002147;
   color: white;
   border: none;
   padding: 10px 15px;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.2s;
+  font-size: 1rem; 
+  &:hover {
+    background-color: darkblue; // Darker green on hover
+
+  } 
 `;
 
 const CardGrid = styled.div`
@@ -67,7 +201,7 @@ const Card = styled.div`
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff; /* White background for card */
+  background-color: #ffffff; 
   transition: transform 0.2s;
 
   &:hover {
@@ -76,43 +210,44 @@ const Card = styled.div`
 `;
 
 const UserInfo = styled.div`
-  text-align: center; /* Center the image and name */
+  text-align: center; 
   margin-bottom: 16px; 
 `;
 
 const UserImage = styled.img`
-  border-radius: 50%; /* Circular image */
-  width: 100px; /* Set image width */
-  height: 100px; /* Set image height */
-  object-fit: cover; /* Cover the container without distortion */
-  margin-bottom: 10px; /* Space below the image */
+  border-radius: 50%; 
+  width: 100px; 
+  height: 100px; 
+  object-fit: cover; 
+  margin-bottom: 10px; 
 `;
 
 const UserName = styled.h2`
-  font-size: 1.3rem; /* Font size for the user's name */
-  color: #0066b2; /* Blue color for emphasis */
+  font-size: 1.3rem; 
+  color: #0066b2; 
   margin-bottom: 8px; 
 `;
 
 const UserDetailsContainer = styled.div`
   display: flex;
-  flex-direction: column; /* Stack details vertically */
-  align-items: flex-start; /* Align details to the left */
-  height: 100px; /* Fixed height for consistency */
+  flex-direction: column;
+  align-items: flex-start; 
+  height: 100px; 
+  margin-bottom:20px;
 `;
 
 const UserDetail = styled.p`
   font-size: 1rem; 
-  color: #555; /* Gray color for less emphasis */
-  margin: 4px 0; /* Space above and below the paragraphs */
-  white-space: nowrap; /* Prevent wrapping */
-  overflow: hidden; /* Hide overflow */
-  text-overflow: ellipsis; /* Add ellipsis for overflowed text */
+  color: #555; 
+  margin: 4px 0; 
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
 `;
 
 const TableContainer = styled.div`
   margin-top: 20px;
-  overflow-x: auto; /* Allow horizontal scrolling */
+  overflow-x: auto; 
 `;
 
 const Table = styled.table`
@@ -145,130 +280,38 @@ export const TableRow = styled.tr`
 
 const ActionButtonContainer = styled.div`
   display: flex;
-  justify-content: center; /* Center buttons horizontally */
-  gap: 20px; /* Add space between buttons */
+  justify-content: center; 
+  gap: 20px; 
   margin-top:5px;
 `;
 
-const EditButton = styled.button`
-  background-color: #f39c12; /* Orange color */
+const UpdateButton = styled.button`
+  background-color: #f39c12; 
   color: white;
   border: none;
-  padding: 10px 15px; /* Increased padding */
+  padding: 10px 15px; 
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1rem; /* Increased font size */
+  font-size: 1rem; 
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: #e67e22; /* Darker orange */
+    background-color: #e67e22; 
   }
 `;
 
 const DeleteButton = styled.button`
-  background-color: #c0392b; /* Red color */
+  background-color: #c0392b; 
   color: white;
   border: none;
-  padding: 10px 15px; /* Increased padding */
+  padding: 10px 15px; 
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1rem; /* Increased font size */
+  font-size: 1rem; 
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: #a93226; /* Darker red */
+    background-color: #a93226; 
   }
 `;
 
-const UserCard = () => {
-  const [users, setUsers] = useState<User[]>([]);
-  const [isCardView, setIsCardView] = useState(true); // State to manage view type
-
-  useEffect(() => {
-    const fetchUsers = async () => {
-      const data = await getUsers();
-      setUsers(data);
-    };
-    fetchUsers();
-  }, []);
-
-  const handleDelete = async (id: number) => {
-    await deleteUser(id);
-    setUsers(users.filter(user => user.id !== id));
-  };
-
-  // Static image URL for all users
-  const userIcon = 'https://alhathal.net/wp-content/uploads/2019/07/516-5167304_transparent-background-white-user-icon-png-png-download.png'; // Replace with your desired image URL
-
-  const toggleView = () => {
-    setIsCardView(!isCardView); // Toggle the view type
-  };
-
-  return (
-    <Container>
-      <HeaderContainer>
-        <Title>User List</Title>
-        <ToggleButton onClick={toggleView}>
-          {isCardView ? 'List' : 'Card'}
-        </ToggleButton>
-      </HeaderContainer>
-
-      {isCardView ? (
-        <CardGrid>
-          {users.map(user => (
-            <Card key={user.id}>
-              <UserInfo>
-                <UserImage src={userIcon} alt="User Icon" />
-                <UserName>{user.name}</UserName>
-              </UserInfo>
-              <UserDetailsContainer>
-                <UserDetail><strong>Username:</strong> {user.username}</UserDetail>
-                <UserDetail><strong>Email:</strong> {user.email}</UserDetail>
-                <UserDetail><strong>Phone:</strong> {user.phone}</UserDetail>
-                <UserDetail><strong>Website:</strong> {user.website}</UserDetail>
-              </UserDetailsContainer>
-              <ActionButtonContainer>
-                <EditButton>Edit</EditButton>
-                <DeleteButton onClick={() => handleDelete(user.id)}>Delete</DeleteButton>
-              </ActionButtonContainer>
-            </Card>
-          ))}
-        </CardGrid>
-      ) : (
-        <TableContainer>
-          <Table>
-            <thead>
-              <tr>
-                <TableHeader>Name</TableHeader>
-                <TableHeader>Username</TableHeader>
-                <TableHeader>Email</TableHeader>
-                <TableHeader>Phone</TableHeader>
-                <TableHeader>Website</TableHeader>
-                <TableHeader>Actions</TableHeader>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(user => (
-                <TableRow key={user.id}>
-                  <TableCell>{user.name}</TableCell>
-                  <TableCell>{user.username}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.phone}</TableCell>
-                  <TableCell>{user.website}</TableCell>
-                  <TableCell>
-                    <ActionButtonContainer>
-                      <EditButton>Edit</EditButton>
-                      <DeleteButton onClick={() => handleDelete(user.id)}>Delete</DeleteButton>
-                    </ActionButtonContainer>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </tbody>
-          </Table>
-        </TableContainer>
-      )}
-    </Container>
-  );
-};
-
-export default UserCard;

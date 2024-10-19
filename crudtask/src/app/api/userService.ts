@@ -1,3 +1,5 @@
+import { User } from "../types/user";
+
 const API_URL = 'https://jsonplaceholder.typicode.com/users';
 
 // Fetch all users
@@ -6,27 +8,11 @@ export const getUsers = async () => {
   return response.json();
 };
 
-// Create a user (normally you'd pass user data here, but for simplicity, we'll just send an empty object)
-export const createUser = async () => {
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({}),  // Simulated API call
-  });
-  return response.json();
-};
+// api/userService.ts
 
-// Update a user
-export const updateUser = async (id: number) => {
-  const response = await fetch(`${API_URL}/${id}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({}),  // Simulated API call
-  });
+// Get user by ID
+export const getUserById = async (id: number) => {
+  const response = await fetch(`${API_URL}/${id}`);
   return response.json();
 };
 
@@ -37,3 +23,29 @@ export const deleteUser = async (id: number) => {
   });
   return response.ok;
 };
+
+// Create a user (normally you'd pass user data here, but for simplicity, we'll just send an empty object)
+// Create a user
+export const createUser = async (user: User) => {
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(user),  // Send the user data
+  });
+  return response.json();
+};
+
+// Update a user
+export const updateUser = async (user: User) => {
+  const response = await fetch(`${API_URL}/${user.id}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(user),  // Send the updated user data
+  });
+  return response.json();
+};
+
